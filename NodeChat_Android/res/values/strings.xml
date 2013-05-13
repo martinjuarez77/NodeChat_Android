@@ -1,0 +1,9 @@
+<resources>
+
+    <string name="app_name">NodeChat_Android</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="menu_home">Home</string>
+    <string name="menu_settings">Setting</string>
+    <string name="title_activity_main">NodeChat_Android</string>
+
+</resources>

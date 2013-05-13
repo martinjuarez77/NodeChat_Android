@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<HTML>
+<HEAD><TITLE>NodeChat_Android</TITLE>
+<META content="text/html; charset=utf-8" http-equiv="Content-Type">
+<meta name="viewport" content="user-scalable=no,initial-scale=1.0,maximum-scale=1.0" />
+<script type="text/javascript" charset="utf-8" src="cordova-1.9.0.js"></script>
+<SCRIPT src="js/jquery.min.js"></SCRIPT>
+<SCRIPT src="js/socket.io.js"></SCRIPT>
+
+<SCRIPT>
+// dirección del servidor node.js
+var socket = io.connect('');
+
+jQuery(function ($) { 
+  var users = $('.users');
+  var usersList = $('.users ul');
+  var messages = $('.messages');
+  var nickname = $('#nickname');
+  var messageForm = $('.message-box form');
+  var message = $('.message');
+  var wrapper = $('.wrapper');
+  var login = $('.login');
+  var setNicknameForm = $('.login form');
+  var showButton = $('.show');
+  
+  nickname.focus(function() {
+    $(this).val('');
+  });
+  
+  nickname.val("Ponga su nick");
+  
+  socket.on('nicknames', function (data) {
+    var html = '';
+    for (var i = 0; i < data.length; i++) {
+      html += '<li><span>' + data[i] + '</span></li>';
+    }
+    usersList.empty().append(html);
+  });
+  
+  socket.on('announcement', function (data) {
+    messages.append('<p>' + data.message + '</p>');
+  });
+  
+  socket.on('user message', function (data) {
+    messages.append('<p><strong>' + data.nick + '</strong> ' +  data.message + '</p>');
+  });
+  
+  /*
+  * Set the nickname for a user
+  * A callback is received from the server. If it is true then the name 
+  * already taken. 
+  */
+  setNicknameForm.submit(function(event) {
+    event.preventDefault(); 
+    socket.emit('nickname', nickname.val(), function (data) {
+      if (data) {
+        console.log('Nick oker');
+        login.hide();
+        wrapper.show();
+      } else {
+        setNicknameForm.prepend('<p>Pongase otro que este esta ocupado.</p>');
+      }
+    });
+  });
+  
+  /*
+  * Sends a message to the server
+  */
+  messageForm.submit(function(event) {
+    event.preventDefault(); 
+    socket.emit('user message', message.val());
+    message.val('').focus();
+  });
+  
+  showButton.hover(
+    function () {
+      $(this).animate({
+          'padding-right': '+=2',
+          'margin-left': '-=2'
+      }, 150);
+      }, 
+      function () {
+        $(this).animate({
+          'padding-right': '-=2',
+          'margin-left': '+=2'
+      }, 150);
+    }
+  );
+  
+  
+  showButton.toggle(function() {
+    $(this)
+      .text('>')
+      .css('margin-left', '180px')
+      .attr('title', 'Hide users');
+      users.show();
+      messages.css('width', '200px');
+  }, function() {
+    $(this)
+      .text('<')
+      .css('margin-left', '331px')
+      .attr('title', 'Show users');
+      users.hide();
+      messages.css('width', '350px');
+  });
+});
+
+
+
+
+</SCRIPT>
+
+<BODY>
+<SECTION class="login">
+<H1>NodeChat_Android</H1>
+<FORM>
+Rellene este campo para entrar
+<INPUT id="nickname" type="text">
+<BUTTON>Entrar</BUTTON>
+</FORM>
+</SECTION>
+
+<SECTION class="wrapper">
+	<SECTION class="messages">
+		
+	</SECTION>
+	<SECTION class="users">
+		<UL></UL>
+	</SECTION>
+	<SECTION class="message-box"> 
+		<FORM>
+		<INPUT class="message">
+		<BUTTON>Enviar mensaje</BUTTON>
+		</FORM>
+	</SECTION>
+</SECTION>
+</BODY>
+</HTML>
